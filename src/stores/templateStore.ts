@@ -40,9 +40,8 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
   fetchTemplates: async () => {
     set({ loading: true })
     try {
-      const remote = await api.listTemplates()
-      // merge with default template (always available locally)
-      const hasDefault = remote.some((t: Template) => t.id === 'default')
+      const remote = await api.listTemplates() as Template[]
+      const hasDefault = remote.some((t) => t.id === 'default')
       set({ templates: hasDefault ? remote : [defaultTemplate, ...remote] })
     } catch {
       // keep local default if API fails
@@ -53,7 +52,6 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
 
   saveTemplate: async (template) => {
     if (template.id === 'default') {
-      // default template is local only
       set((state) => ({
         templates: state.templates.map((t) => (t.id === 'default' ? template : t)),
       }))
@@ -61,8 +59,8 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
     }
     const exists = get().templates.find((t) => t.id === template.id && t.id !== 'default')
     const saved = exists
-      ? await api.updateTemplate(template.id, template)
-      : await api.createTemplate(template)
+      ? await api.updateTemplate(template.id, template) as Template
+      : await api.createTemplate(template) as Template
     set((state) => ({
       templates: exists
         ? state.templates.map((t) => (t.id === saved.id ? saved : t))
@@ -89,7 +87,7 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
       createdAt: new Date().toISOString(),
       blocks: template.blocks.map((b) => ({ ...b, id: crypto.randomUUID() })),
     }
-    const saved = await api.createTemplate(copy)
+    const saved = await api.createTemplate(copy) as Template
     set((state) => ({ templates: [...state.templates, saved] }))
   },
 
