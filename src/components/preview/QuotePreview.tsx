@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useState, useEffect } from 'react'
 import type { Quote, Template } from '../../types'
 import { resolveVariables } from '../../utils/template'
 import { formatCurrency, formatDate } from '../../utils/quote'
@@ -9,7 +9,6 @@ interface Props {
   template: Template
 }
 
-// SVG logo placeholder (triangle/W shape similar to the reference)
 function CompanyLogo() {
   return (
     <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,11 +24,23 @@ export const QuotePreview = forwardRef<HTMLDivElement, Props>(function QuotePrev
   const { company } = useSettingsStore()
 
   const companyName = quote.companyName || company.name
-  const companyLogo = quote.companyLogo || company.logo
+  const rawLogo = quote.companyLogo || company.logo
   const showName = company.showNameOnHeader ?? true
-  const fontStyle = company.fontFamily
-    ? { fontFamily: company.fontFamily }
-    : {}
+  const fontStyle = company.fontFamily ? { fontFamily: company.fontFamily } : {}
+
+  // Convert external URL to blob to avoid CORS issues
+  const [companyLogo, setCompanyLogo] = useState(rawLogo)
+  useEffect(() => {
+    if (!rawLogo) { setCompanyLogo(''); return }
+    if (rawLogo.startsWith('data:') || rawLogo.startsWith('blob:')) {
+      setCompanyLogo(rawLogo)
+      return
+    }
+    fetch(rawLogo)
+      .then((r) => r.blob())
+      .then((b) => setCompanyLogo(URL.createObjectURL(b)))
+      .catch(() => setCompanyLogo(rawLogo))
+  }, [rawLogo])
 
   // Calculate totals for financial summary
   const totalHours = quote.items.reduce((sum, i) => sum + (i.estimateHours ?? i.quantity), 0)

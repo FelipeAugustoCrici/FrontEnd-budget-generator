@@ -72,17 +72,39 @@ export const api = {
     core<Partial<Quote>>('/api/ai/quote', { method: 'POST', body: JSON.stringify({ prompt }) }),
 
   // Upload
+  presignUpload: (filename: string, contentType: string) =>
+    core<{ uploadUrl: string; publicUrl: string; objectKey: string }>('/api/upload/presign', {
+      method: 'POST',
+      body: JSON.stringify({ filename, contentType }),
+    }),
+
   uploadFile: async (file: File): Promise<string> => {
     const token = localStorage.getItem('budget-token')
-    const form = new FormData()
-    form.append('file', file)
-    const res = await fetch(`${CORE_URL}/api/upload`, {
-      method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: form,
+    const CORE_URL_LOCAL = import.meta.env.VITE_CORE_URL ?? 'http://localhost:9000'
+
+    // Get presigned URL from backend
+    const { uploadUrl, publicUrl } = await (async () => {
+      const res = await fetch(`${CORE_URL_LOCAL}/api/upload/presign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'presign failed')
+      return data as { uploadUrl: string; publicUrl: string; objectKey: string }
+    })()
+
+    // Upload directly to R2/MinIO — no backend bandwidth used
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file,
     })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error ?? 'upload failed')
-    return data.url as string
+    if (!uploadRes.ok) throw new Error('upload to storage failed')
+
+    return publicUrl
   },
 }

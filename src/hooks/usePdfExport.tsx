@@ -69,27 +69,40 @@ async function ensureFont(fontFamily: string) {
   }
 }
 
+async function fetchImageAsBase64(url: string): Promise<string> {
+  try {
+    const res = await fetch(url)
+    if (!res.ok) return ''
+    const blob = await res.blob()
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = () => resolve('')
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return ''
+  }
+}
+
 export async function exportPdf(
   quote: Quote,
   template: Template,
   company: CompanySettings,
   filename = 'orcamento.pdf'
 ) {
-  // Pre-load font before generating PDF
   if (company.fontFamily && company.fontFamily !== 'custom') {
     await ensureFont(company.fontFamily)
   }
 
-  // Convert base64 logo to blob URL if needed
+  // Convert logo to base64 — works for both URLs and existing base64
   const logoSrc = quote.companyLogo || company.logo
-  let resolvedLogo = logoSrc
-  if (logoSrc && logoSrc.startsWith('data:')) {
-    try {
-      const res = await fetch(logoSrc)
-      const blob = await res.blob()
-      resolvedLogo = URL.createObjectURL(blob)
-    } catch {
-      resolvedLogo = ''
+  let resolvedLogo = ''
+  if (logoSrc) {
+    if (logoSrc.startsWith('data:')) {
+      resolvedLogo = logoSrc
+    } else {
+      resolvedLogo = await fetchImageAsBase64(logoSrc)
     }
   }
 
