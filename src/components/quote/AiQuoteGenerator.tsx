@@ -106,6 +106,12 @@ export function AiQuoteGenerator({ onApply }: Props) {
                 Total: <span className="text-gray-700 font-medium">
                   {preview.items.reduce((s, i) => s + (i.estimateHours ?? 0), 0)}h
                 </span>
+                {preview.hourlyRate ? (
+                  <span className="ml-2 text-indigo-600 font-medium">
+                    · R$ {preview.hourlyRate.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h
+                    · Total: R$ {(preview.items.reduce((s, i) => s + (i.estimateHours ?? 0), 0) * preview.hourlyRate).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                ) : null}
               </p>
             </div>
           )}
