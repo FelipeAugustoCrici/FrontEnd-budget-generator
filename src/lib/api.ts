@@ -1,3 +1,6 @@
+import type { Quote, Template } from '../types'
+import type { CompanySettings } from '../stores/settingsStore'
+
 const AUTH_URL = import.meta.env.VITE_AUTH_URL ?? 'http://localhost:9001'
 const CORE_URL = import.meta.env.VITE_CORE_URL ?? 'http://localhost:9000'
 
@@ -18,7 +21,6 @@ async function request<T>(baseUrl: string, path: string, options: RequestInit = 
 
   if (res.status === 401) {
     localStorage.removeItem('budget-token')
-    // only redirect if not already on auth pages
     if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
       window.location.href = '/login'
     }
@@ -30,34 +32,42 @@ async function request<T>(baseUrl: string, path: string, options: RequestInit = 
   return data as T
 }
 
-const auth = (path: string, options?: RequestInit) => request(AUTH_URL, path, options)
-const core = (path: string, options?: RequestInit) => request(CORE_URL, path, options)
+interface AuthResponse {
+  token: string
+  user: { id: string; name: string; email: string }
+}
+
+const auth = <T>(path: string, options?: RequestInit) => request<T>(AUTH_URL, path, options)
+const core = <T>(path: string, options?: RequestInit) => request<T>(CORE_URL, path, options)
 
 export const api = {
-  // Auth service
+  // Auth
   register: (name: string, email: string, password: string) =>
-    auth('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) }),
+    auth<AuthResponse>('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) }),
   login: (email: string, password: string) =>
-    auth('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
+    auth<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
+  me: () =>
+    core<{ id: string; name: string; email: string }>('/api/me'),
 
-  // Core service
-  me: () => core('/api/me'),
+  // Quotes
+  listQuotes: () => core<Quote[]>('/api/quotes'),
+  getQuote: (id: string) => core<Quote>(`/api/quotes/${id}`),
+  createQuote: (data: Quote) => core<Quote>('/api/quotes', { method: 'POST', body: JSON.stringify(data) }),
+  updateQuote: (id: string, data: Quote) => core<Quote>(`/api/quotes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteQuote: (id: string) => core<{ ok: boolean }>(`/api/quotes/${id}`, { method: 'DELETE' }),
 
-  listQuotes: () => core('/api/quotes'),
-  getQuote: (id: string) => core(`/api/quotes/${id}`),
-  createQuote: (data: any) => core('/api/quotes', { method: 'POST', body: JSON.stringify(data) }),
-  updateQuote: (id: string, data: any) => core(`/api/quotes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteQuote: (id: string) => core(`/api/quotes/${id}`, { method: 'DELETE' }),
+  // Templates
+  listTemplates: () => core<Template[]>('/api/templates'),
+  getTemplate: (id: string) => core<Template>(`/api/templates/${id}`),
+  createTemplate: (data: Template) => core<Template>('/api/templates', { method: 'POST', body: JSON.stringify(data) }),
+  updateTemplate: (id: string, data: Template) => core<Template>(`/api/templates/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteTemplate: (id: string) => core<{ ok: boolean }>(`/api/templates/${id}`, { method: 'DELETE' }),
 
-  listTemplates: () => core('/api/templates'),
-  getTemplate: (id: string) => core(`/api/templates/${id}`),
-  createTemplate: (data: any) => core('/api/templates', { method: 'POST', body: JSON.stringify(data) }),
-  updateTemplate: (id: string, data: any) => core(`/api/templates/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteTemplate: (id: string) => core(`/api/templates/${id}`, { method: 'DELETE' }),
+  // Settings
+  getSettings: () => core<CompanySettings & { id?: string; userId?: string }>('/api/settings'),
+  upsertSettings: (data: CompanySettings) => core<CompanySettings>('/api/settings', { method: 'PUT', body: JSON.stringify(data) }),
 
-  getSettings: () => core('/api/settings'),
-  upsertSettings: (data: any) => core('/api/settings', { method: 'PUT', body: JSON.stringify(data) }),
-
+  // Upload
   uploadFile: async (file: File): Promise<string> => {
     const token = localStorage.getItem('budget-token')
     const form = new FormData()

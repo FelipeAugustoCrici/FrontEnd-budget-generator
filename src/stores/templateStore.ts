@@ -59,8 +59,8 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
     }
     const exists = get().templates.find((t) => t.id === template.id && t.id !== 'default')
     const saved = exists
-      ? await api.updateTemplate(template.id, template) as Template
-      : await api.createTemplate(template) as Template
+      ? await api.updateTemplate(template.id, template)
+      : await api.createTemplate(template)
     set((state) => ({
       templates: exists
         ? state.templates.map((t) => (t.id === saved.id ? saved : t))
