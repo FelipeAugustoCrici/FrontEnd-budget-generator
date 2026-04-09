@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Save, Eye, ArrowLeft, Trash2, LayoutTemplate, Check } from 'lucide-react'
 import { useQuoteStore } from '../../stores/quoteStore'
@@ -25,6 +25,15 @@ export function QuoteForm({ initialQuote, title }: Props) {
   const { setCurrentQuote, saveQuote } = useQuoteStore()
   const { templates } = useTemplateStore()
   const [quote, setQuote] = useState<Quote>(initialQuote)
+  const goingToPreview = useRef(false)
+
+  useEffect(() => {
+    return () => {
+      if (!goingToPreview.current) {
+        setCurrentQuote(null)
+      }
+    }
+  }, [])
 
   function updateItem(updated: QuoteItem) {
     setQuote((q) => ({ ...q, items: q.items.map((i) => (i.id === updated.id ? updated : i)) }))
@@ -47,6 +56,7 @@ export function QuoteForm({ initialQuote, title }: Props) {
   }
 
   function handlePreview() {
+    goingToPreview.current = true
     setCurrentQuote(quote)
     saveQuote(quote)
     navigate('/preview')
