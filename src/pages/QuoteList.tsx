@@ -43,7 +43,7 @@ export function QuoteList() {
       items: data.items && data.items.length > 0 ? data.items : base.items,
     }
     setCurrentQuote(quote)
-    navigate(`/quotes/${quote.id}`)
+    navigate('/quotes/new')
   }
   function handleEdit(quote: Quote) {
     setCurrentQuote(quote)
