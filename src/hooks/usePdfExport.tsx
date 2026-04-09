@@ -1,5 +1,4 @@
 import { pdf, Font } from '@react-pdf/renderer'
-import { createElement } from 'react'
 import { QuotePdf } from '../components/pdf/QuotePdf'
 import type { Quote, Template } from '../types'
 import type { CompanySettings } from '../stores/settingsStore'
@@ -98,7 +97,7 @@ export async function exportPdf(
   const resolvedCompany = { ...company, logo: resolvedLogo }
 
   const blob = await pdf(
-    createElement(QuotePdf, { quote: resolvedQuote, template, company: resolvedCompany })
+    <QuotePdf quote={resolvedQuote} template={template} company={resolvedCompany} />
   ).toBlob()
 
   const url = URL.createObjectURL(blob)
