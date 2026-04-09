@@ -10,6 +10,7 @@ import { Badge } from '../ui/Badge'
 import { LogoUpload } from '../ui/LogoUpload'
 import { CurrencyInput } from '../ui/CurrencyInput'
 import { RichTextEditor } from '../ui/RichTextEditor'
+import { AiQuoteGenerator } from './AiQuoteGenerator'
 import { formatCurrency, STATUS_LABELS, STATUS_COLORS } from '../../utils/quote'
 import { BLOCK_LABELS } from '../../utils/template'
 import type { Quote, QuoteItem } from '../../types'
@@ -64,6 +65,11 @@ export function QuoteForm({ initialQuote, title }: Props) {
           <ArrowLeft size={16} />
         </Button>
         <h1 className="text-2xl font-bold text-gray-900 flex-1">{title}</h1>
+        <AiQuoteGenerator onApply={(data) => setQuote((q) => ({
+          ...q,
+          ...data,
+          items: data.items && data.items.length > 0 ? data.items : q.items,
+        }))} />
         <Badge className={STATUS_COLORS[quote.status]}>{STATUS_LABELS[quote.status]}</Badge>
         <select
           className="text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400"

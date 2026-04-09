@@ -67,6 +67,10 @@ export const api = {
   getSettings: () => core<CompanySettings & { id?: string; userId?: string }>('/api/settings'),
   upsertSettings: (data: CompanySettings) => core<CompanySettings>('/api/settings', { method: 'PUT', body: JSON.stringify(data) }),
 
+  // AI
+  generateQuote: (prompt: string) =>
+    core<Partial<Quote>>('/api/ai/quote', { method: 'POST', body: JSON.stringify({ prompt }) }),
+
   // Upload
   uploadFile: async (file: File): Promise<string> => {
     const token = localStorage.getItem('budget-token')
