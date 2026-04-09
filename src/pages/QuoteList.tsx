@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Trash2, Edit2, Eye } from 'lucide-react'
-import { useQuoteStore } from '../stores/quoteStore'
+import { useQuoteStore, createEmptyQuote } from '../stores/quoteStore'
+import { useTemplateStore } from '../stores/templateStore'
+import { useSettingsStore } from '../stores/settingsStore'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { AiQuoteGenerator } from '../components/quote/AiQuoteGenerator'
 import { STATUS_LABELS, STATUS_COLORS, formatCurrency, formatDate } from '../utils/quote'
 import type { Quote } from '../types'
 
@@ -13,6 +16,8 @@ const ALL_STATUSES: Quote['status'][] = ['draft', 'sent', 'approved', 'rejected'
 export function QuoteList() {
   const navigate = useNavigate()
   const { quotes, deleteQuote, setCurrentQuote, fetchQuotes } = useQuoteStore()
+  const { selectedTemplateId } = useTemplateStore()
+  const { company } = useSettingsStore()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<Quote['status'] | 'all'>('all')
 
@@ -28,6 +33,18 @@ export function QuoteList() {
     navigate('/quotes/new')
   }
 
+  function handleAiApply(data: Partial<Quote>) {
+    const base = createEmptyQuote(selectedTemplateId)
+    const quote: Quote = {
+      ...base,
+      ...data,
+      companyName: base.companyName || company.name,
+      companyLogo: base.companyLogo || company.logo,
+      items: data.items && data.items.length > 0 ? data.items : base.items,
+    }
+    setCurrentQuote(quote)
+    navigate(`/quotes/${quote.id}`)
+  }
   function handleEdit(quote: Quote) {
     setCurrentQuote(quote)
     navigate(`/quotes/${quote.id}`)
@@ -47,7 +64,7 @@ export function QuoteList() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Orçamentos</h1>
           <p className="text-sm text-gray-500 mt-1">{quotes.length} orçamento{quotes.length !== 1 ? 's' : ''} no total</p>
@@ -56,6 +73,8 @@ export function QuoteList() {
           <Plus size={16} /> Novo Orçamento
         </Button>
       </div>
+
+      <AiQuoteGenerator onApply={handleAiApply} />
 
       <Card className="mb-6 p-4 flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-48">

@@ -60,16 +60,12 @@ export function QuoteForm({ initialQuote, title }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="flex items-center gap-3 mb-8">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
         <Button variant="ghost" size="sm" onClick={() => navigate('/quotes')}>
           <ArrowLeft size={16} />
         </Button>
         <h1 className="text-2xl font-bold text-gray-900 flex-1">{title}</h1>
-        <AiQuoteGenerator onApply={(data) => setQuote((q) => ({
-          ...q,
-          ...data,
-          items: data.items && data.items.length > 0 ? data.items : q.items,
-        }))} />
         <Badge className={STATUS_COLORS[quote.status]}>{STATUS_LABELS[quote.status]}</Badge>
         <select
           className="text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400"
@@ -85,6 +81,13 @@ export function QuoteForm({ initialQuote, title }: Props) {
         </Button>
         <Button onClick={handleSave}><Save size={16} /> Salvar</Button>
       </div>
+
+      {/* AI bar */}
+      <AiQuoteGenerator onApply={(data) => setQuote((q) => ({
+        ...q,
+        ...data,
+        items: data.items && data.items.length > 0 ? data.items : q.items,
+      }))} />
 
       {/* Template selector */}
       <Card className="p-6 mb-5">
