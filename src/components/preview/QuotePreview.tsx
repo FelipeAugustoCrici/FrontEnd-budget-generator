@@ -36,7 +36,11 @@ export const QuotePreview = forwardRef<HTMLDivElement, Props>(function QuotePrev
       setCompanyLogo(rawLogo)
       return
     }
-    fetch(rawLogo)
+    const CORE_URL = import.meta.env.VITE_CORE_URL ?? 'http://localhost:9000'
+    const token = localStorage.getItem('budget-token')
+    const proxyUrl = `${CORE_URL}/api/image-proxy?url=${encodeURIComponent(rawLogo)}`
+
+    fetch(proxyUrl, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then((r) => r.blob())
       .then((b) => setCompanyLogo(URL.createObjectURL(b)))
       .catch(() => setCompanyLogo(rawLogo))

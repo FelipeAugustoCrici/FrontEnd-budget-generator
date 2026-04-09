@@ -70,8 +70,31 @@ async function ensureFont(fontFamily: string) {
 }
 
 async function fetchImageAsBase64(url: string): Promise<string> {
+  const CORE_URL = import.meta.env.VITE_CORE_URL ?? 'http://localhost:9000'
+  const token = localStorage.getItem('budget-token')
+
+  // Try direct fetch first
   try {
     const res = await fetch(url)
+    if (res.ok) {
+      const blob = await res.blob()
+      return new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result as string)
+        reader.onerror = () => resolve('')
+        reader.readAsDataURL(blob)
+      })
+    }
+  } catch {
+    // fall through to proxy
+  }
+
+  // Fallback: use backend proxy to avoid CORS
+  try {
+    const proxyUrl = `${CORE_URL}/api/image-proxy?url=${encodeURIComponent(url)}`
+    const res = await fetch(proxyUrl, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
     if (!res.ok) return ''
     const blob = await res.blob()
     return new Promise((resolve) => {
