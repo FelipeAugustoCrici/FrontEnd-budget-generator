@@ -10,7 +10,7 @@ const schema = z.object({
   company: z.string().min(1, 'Empresa obrigatória'),
   email: z.string().email('E-mail inválido'),
   phone: z.string().min(1, 'Telefone obrigatório'),
-  notes: z.string().optional().default(''),
+  notes: z.string().default(''),
   status: z.enum(['active', 'inactive']).default('active'),
 })
 
@@ -24,7 +24,7 @@ interface Props {
 
 export function ClientForm({ initial, onSubmit, loading }: Props) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: { name: initial?.name ?? '', company: initial?.company ?? '', email: initial?.email ?? '', phone: initial?.phone ?? '', notes: initial?.notes ?? '', status: initial?.status ?? 'active' },
   })
 

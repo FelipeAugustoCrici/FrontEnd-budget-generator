@@ -30,7 +30,7 @@ export function ContractForm({ initial, onSubmit, loading }: Props) {
   const [value, setValue] = useState(initial?.value ?? 0)
 
   const { register, handleSubmit, setValue: setField, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       clientId: initial?.clientId ?? '',
       value: initial?.value ?? 0,
