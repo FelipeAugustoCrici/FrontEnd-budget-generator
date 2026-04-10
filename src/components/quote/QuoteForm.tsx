@@ -12,6 +12,7 @@ import { LogoUpload } from '../ui/LogoUpload'
 import { CurrencyInput } from '../ui/CurrencyInput'
 import { RichTextEditor } from '../ui/RichTextEditor'
 import { AiQuoteGenerator } from './AiQuoteGenerator'
+import { QuoteVersions } from './QuoteVersions'
 import { formatCurrency, STATUS_LABELS, STATUS_COLORS } from '../../utils/quote'
 import { BLOCK_LABELS } from '../../utils/template'
 import type { Quote, QuoteItem } from '../../types'
@@ -101,6 +102,9 @@ export function QuoteForm({ initialQuote, title }: Props) {
         ...data,
         items: data.items && data.items.length > 0 ? data.items : q.items,
       }))} />
+
+      {/* Version history */}
+      <QuoteVersions quoteId={quote.id} onRestore={(restored) => setQuote(restored)} />
 
       {/* Template selector */}
       <Card className="p-6 mb-5">

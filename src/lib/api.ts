@@ -1,6 +1,17 @@
 import type { Quote, Template } from '../types'
 import type { CompanySettings } from '../stores/settingsStore'
 
+export interface QuoteVersion {
+  id: string
+  quoteId: string
+  userId: string
+  versionNumber: number
+  isActive: boolean
+  changeNote: string
+  snapshot: Omit<Quote, 'id' | 'createdAt'>
+  createdAt: string
+}
+
 export interface CrmClient {
   id: string
   user_id: string
@@ -145,6 +156,11 @@ export const api = {
   refuseContract: (id: string) => core<CrmContract>(`/api/contracts/${id}/refuse`, { method: 'POST' }),
   listContractEvents: (id: string) => core<CrmContractEvent[]>(`/api/contracts/${id}/events`),
   getContractByBudget: (budgetId: string) => core<CrmContract>(`/api/contracts/by-budget/${budgetId}`),
+
+  // Quote versions
+  listQuoteVersions: (id: string) => core<QuoteVersion[]>(`/api/quotes/${id}/versions`),
+  activateQuoteVersion: (id: string, versionId: string) =>
+    core<Quote>(`/api/quotes/${id}/versions/${versionId}/activate`, { method: 'POST' }),
 
   // Upload
   presignUpload: (filename: string, contentType: string) =>
