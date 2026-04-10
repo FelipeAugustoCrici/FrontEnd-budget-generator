@@ -8,6 +8,7 @@ export function QuoteEditor() {
 
   const quote = quotes.find((q) => q.id === id)
   if (!quote) return <Navigate to="/quotes" replace />
+  if (quote.status === 'approved') return <Navigate to="/quotes" replace />
 
   return <QuoteForm initialQuote={quote} title="Editar Orçamento" />
 }

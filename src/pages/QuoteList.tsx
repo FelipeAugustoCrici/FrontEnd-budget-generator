@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { AiQuoteGenerator } from '../components/quote/AiQuoteGenerator'
 import { ConvertToContractModal } from '../components/crm/ConvertToContractModal'
+import { QuoteRowMenu } from '../components/quote/QuoteRowMenu'
 import { useContractByBudget } from '../hooks/crm/useContracts'
 import { STATUS_LABELS, STATUS_COLORS, formatCurrency, formatDate } from '../utils/quote'
 import type { Quote } from '../types'
@@ -140,6 +141,7 @@ export function QuoteList() {
                 <th className="text-left px-5 py-3 text-gray-500 font-medium">Data</th>
                 <th className="text-left px-5 py-3 text-gray-500 font-medium">Status</th>
                 <th className="text-right px-5 py-3 text-gray-500 font-medium">Total</th>
+                <th className="text-left px-5 py-3 text-gray-500 font-medium">Versão</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
@@ -153,19 +155,26 @@ export function QuoteList() {
                   </td>
                   <td className="px-5 py-3.5 text-right font-medium text-gray-800">{formatCurrency(quoteTotal(quote))}</td>
                   <td className="px-5 py-3.5">
+                    <QuoteRowMenu quoteId={quote.id} />
+                  </td>
+                  <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-1">
                       <Button variant="ghost" size="sm" onClick={() => handlePreview(quote)}>
                         <Eye size={14} />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(quote)}>
-                        <Edit2 size={14} />
-                      </Button>
+                      {quote.status !== 'approved' && (
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(quote)}>
+                          <Edit2 size={14} />
+                        </Button>
+                      )}
                       {quote.status === 'approved' && (
                         <ConvertButton quote={quote} onClick={() => setConvertingQuote(quote)} />
                       )}
-                      <Button variant="ghost" size="sm" onClick={() => deleteQuote(quote.id)}>
-                        <Trash2 size={14} className="text-red-400" />
-                      </Button>
+                      {quote.status !== 'approved' && (
+                        <Button variant="ghost" size="sm" onClick={() => deleteQuote(quote.id)}>
+                          <Trash2 size={14} className="text-red-400" />
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
