@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
+import logo from '../assets/logo.png'
 
 export function Login() {
   const navigate = useNavigate()
@@ -26,7 +27,7 @@ export function Login() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img src="/src/assets/logo.png" alt="BudgetGen" className="h-20 mx-auto mb-2" />
+          <img src={logo} alt="BudgetGen" className="h-20 mx-auto mb-2" />
           <p className="text-sm text-gray-500 mt-1">Entre na sua conta</p>
         </div>
 

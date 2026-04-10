@@ -12,6 +12,7 @@ import {
   Users,
 } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
+import logo from '../../assets/logo.png'
 
 export function Sidebar() {
   const location = useLocation()
@@ -37,7 +38,7 @@ export function Sidebar() {
   return (
     <aside className="w-60 h-screen bg-white border-r border-gray-100 flex flex-col py-6 px-4 gap-1 shrink-0">
       <div className="mb-8 px-2 flex justify-center">
-        <img src="/src/assets/logo.png" alt="BudgetGen" className="h-20" />
+        <img src={logo} alt="BudgetGen" className="h-20" />
       </div>
 
       {/* Dashboard */}
