@@ -17,6 +17,8 @@ import { ClientsPage } from './pages/crm/ClientsPage'
 import { ClientDetailPage } from './pages/crm/ClientDetailPage'
 import { ContractsPage } from './pages/crm/ContractsPage'
 import { ContractDetailPage } from './pages/crm/ContractDetailPage'
+import { ContractEditorPage } from './pages/contracts/ContractEditorPage'
+import { ContractViewerPage } from './pages/contracts/ContractViewerPage'
 
 const queryClient = new QueryClient()
 
@@ -45,6 +47,8 @@ function AppRoutes() {
           <Route path="/crm/clients/:id" element={<ClientDetailPage />} />
           <Route path="/crm/contracts" element={<ContractsPage />} />
           <Route path="/crm/contracts/:id" element={<ContractDetailPage />} />
+          <Route path="/crm/contracts/:id/document" element={<ContractEditorPage />} />
+          <Route path="/crm/contracts/:id/document/view" element={<ContractViewerPage />} />
         </Route>
       </Route>
 

@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Send, CheckCircle, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Send, CheckCircle, ExternalLink, FileEdit, AlertCircle } from 'lucide-react'
 import { useContract, useContractEvents, useContractAction } from '../../hooks/crm/useContracts'
 import { useQuoteStore } from '../../stores/quoteStore'
+import { useContractDocStore } from '../../stores/contractDocStore'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { StatusBadge } from '../../components/crm/StatusBadge'
@@ -14,7 +15,9 @@ export function ContractDetailPage() {
   const { data: events = [] } = useContractEvents(id!)
   const action = useContractAction()
   const { quotes } = useQuoteStore()
+  const { getDoc } = useContractDocStore()
   const linkedQuote = contract?.budget_id ? quotes.find((q) => q.id === contract.budget_id) : null
+  const hasDocument = !!getDoc(id!)?.content
 
   if (isLoading) return <div className="text-center py-20 text-gray-400">Carregando...</div>
   if (!contract) return <div className="text-center py-20 text-gray-400">Contrato não encontrado.</div>
@@ -37,6 +40,9 @@ export function ContractDetailPage() {
           <p className="text-sm text-gray-500">{contract.description}</p>
         </div>
         <StatusBadge type="contract" status={contract.status as any} />
+        <Button variant="secondary" onClick={() => navigate(`/crm/contracts/${id}/document`)}>
+          <FileEdit size={15} /> Documento
+        </Button>
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
@@ -59,9 +65,20 @@ export function ContractDetailPage() {
 
       <Card className="p-5 mb-6 flex gap-3 flex-wrap">
         {contract.status === 'draft' && (
-          <Button onClick={() => action.mutate({ id: contract.id, action: 'send' })} disabled={action.isPending}>
-            <Send size={15} /> Enviar Contrato
-          </Button>
+          <>
+            <Button
+              onClick={() => action.mutate({ id: contract.id, action: 'send' })}
+              disabled={action.isPending || !hasDocument}
+              title={!hasDocument ? 'Gere o documento antes de enviar' : undefined}
+            >
+              <Send size={15} /> Enviar Contrato
+            </Button>
+            {!hasDocument && (
+              <p className="flex items-center gap-1.5 text-xs text-amber-600 self-center">
+                <AlertCircle size={13} /> Gere o documento antes de enviar.
+              </p>
+            )}
+          </>
         )}
         {contract.status === 'sent' && (
           <Button variant="secondary" onClick={() => action.mutate({ id: contract.id, action: 'view' })} disabled={action.isPending}>
