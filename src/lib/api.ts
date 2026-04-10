@@ -1,6 +1,45 @@
 import type { Quote, Template } from '../types'
 import type { CompanySettings } from '../stores/settingsStore'
 
+export interface CrmClient {
+  id: string
+  user_id: string
+  name: string
+  company: string
+  email: string
+  phone: string
+  notes: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CrmContractEvent {
+  id: string
+  contract_id: string
+  type: string
+  metadata: string
+  created_at: string
+}
+
+export interface CrmContract {
+  id: string
+  user_id: string
+  client_id: string
+  client?: CrmClient
+  budget_id?: string
+  value: number
+  status: string
+  start_date?: string
+  end_date?: string
+  auto_renew: boolean
+  description: string
+  sent_at?: string
+  viewed_at?: string
+  signed_at?: string
+  created_at: string
+  updated_at: string
+}
+
 const AUTH_URL = import.meta.env.VITE_AUTH_URL ?? 'http://localhost:9001'
 const CORE_URL = import.meta.env.VITE_CORE_URL ?? 'http://localhost:9000'
 
@@ -70,6 +109,42 @@ export const api = {
   // AI
   generateQuote: (prompt: string) =>
     core<Partial<Quote>>('/api/ai/quote', { method: 'POST', body: JSON.stringify({ prompt }) }),
+
+  // CRM - Clients
+  listClients: (params?: { search?: string; page?: number; limit?: number }) => {
+    const q = new URLSearchParams()
+    if (params?.search) q.set('search', params.search)
+    if (params?.page) q.set('page', String(params.page))
+    if (params?.limit) q.set('limit', String(params.limit))
+    return core<{ data: CrmClient[]; total: number; page: number; limit: number }>(`/api/clients?${q}`)
+  },
+  getClient: (id: string) => core<CrmClient>(`/api/clients/${id}`),
+  createClient: (data: Omit<CrmClient, 'id' | 'user_id' | 'created_at' | 'updated_at'>) =>
+    core<CrmClient>('/api/clients', { method: 'POST', body: JSON.stringify(data) }),
+  updateClient: (id: string, data: Partial<CrmClient>) =>
+    core<CrmClient>(`/api/clients/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteClient: (id: string) => core<{ ok: boolean }>(`/api/clients/${id}`, { method: 'DELETE' }),
+
+  // CRM - Contracts
+  listContracts: (params?: { client_id?: string; status?: string; page?: number; limit?: number }) => {
+    const q = new URLSearchParams()
+    if (params?.client_id) q.set('client_id', params.client_id)
+    if (params?.status) q.set('status', params.status)
+    if (params?.page) q.set('page', String(params.page))
+    if (params?.limit) q.set('limit', String(params.limit))
+    return core<{ data: CrmContract[]; total: number; page: number; limit: number }>(`/api/contracts?${q}`)
+  },
+  getContract: (id: string) => core<CrmContract>(`/api/contracts/${id}`),
+  createContract: (data: Omit<CrmContract, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'client'>) =>
+    core<CrmContract>('/api/contracts', { method: 'POST', body: JSON.stringify(data) }),
+  updateContract: (id: string, data: Partial<CrmContract>) =>
+    core<CrmContract>(`/api/contracts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  sendContract: (id: string) => core<CrmContract>(`/api/contracts/${id}/send`, { method: 'POST' }),
+  viewContract: (id: string) => core<CrmContract>(`/api/contracts/${id}/view`, { method: 'POST' }),
+  signContract: (id: string) => core<CrmContract>(`/api/contracts/${id}/sign`, { method: 'POST' }),
+  refuseContract: (id: string) => core<CrmContract>(`/api/contracts/${id}/refuse`, { method: 'POST' }),
+  listContractEvents: (id: string) => core<CrmContractEvent[]>(`/api/contracts/${id}/events`),
+  getContractByBudget: (budgetId: string) => core<CrmContract>(`/api/contracts/by-budget/${budgetId}`),
 
   // Upload
   presignUpload: (filename: string, contentType: string) =>

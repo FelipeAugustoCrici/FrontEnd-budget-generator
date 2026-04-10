@@ -9,6 +9,7 @@ import {
   List,
   Settings,
   LogOut,
+  Users,
 } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 
@@ -17,7 +18,9 @@ export function Sidebar() {
   const navigate = useNavigate()
   const { currentUser, logout } = useAuthStore()
   const quotesOpen = location.pathname.startsWith('/quotes')
+  const crmOpen = location.pathname.startsWith('/crm')
   const [quotesExpanded, setQuotesExpanded] = useState(quotesOpen)
+  const [crmExpanded, setCrmExpanded] = useState(crmOpen)
 
   function handleLogout() {
     logout()
@@ -33,9 +36,8 @@ export function Sidebar() {
 
   return (
     <aside className="w-60 h-screen bg-white border-r border-gray-100 flex flex-col py-6 px-4 gap-1 shrink-0">
-      <div className="mb-8 px-2">
-        <span className="text-xl font-bold text-indigo-600">BudgetGen</span>
-        <p className="text-xs text-gray-400 mt-0.5">Sistema de Orçamentos</p>
+      <div className="mb-8 px-2 flex justify-center">
+        <img src="/src/assets/logo.png" alt="BudgetGen" className="h-20" />
       </div>
 
       {/* Dashboard */}
@@ -106,6 +108,59 @@ export function Sidebar() {
         <LayoutTemplate size={18} />
         Templates
       </NavLink>
+
+      {/* CRM (collapsible) */}
+      <div>
+        <button
+          onClick={() => setCrmExpanded((v) => !v)}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            crmOpen ? 'text-indigo-600' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+          }`}
+        >
+          <Users size={18} />
+          <span className="flex-1 text-left">CRM</span>
+          <ChevronDown size={15} className={`transition-transform ${crmExpanded ? 'rotate-180' : ''}`} />
+        </button>
+
+        {crmExpanded && (
+          <div className="ml-7 mt-0.5 flex flex-col gap-0.5">
+            <NavLink
+              to="/crm"
+              end
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  isActive ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`
+              }
+            >
+              <LayoutDashboard size={15} />
+              Visão Geral
+            </NavLink>
+            <NavLink
+              to="/crm/clients"
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  isActive ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`
+              }
+            >
+              <Users size={15} />
+              Clientes
+            </NavLink>
+            <NavLink
+              to="/crm/contracts"
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  isActive ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`
+              }
+            >
+              <FileText size={15} />
+              Contratos
+            </NavLink>
+          </div>
+        )}
+      </div>
 
       {/* Spacer */}
       <div className="flex-1" />

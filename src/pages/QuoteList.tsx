@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Trash2, Edit2, Eye } from 'lucide-react'
+import { Plus, Search, Trash2, Edit2, Eye, FileText } from 'lucide-react'
 import { useQuoteStore, createEmptyQuote } from '../stores/quoteStore'
 import { useTemplateStore } from '../stores/templateStore'
 import { useSettingsStore } from '../stores/settingsStore'
@@ -8,8 +8,28 @@ import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { AiQuoteGenerator } from '../components/quote/AiQuoteGenerator'
+import { ConvertToContractModal } from '../components/crm/ConvertToContractModal'
+import { useContractByBudget } from '../hooks/crm/useContracts'
 import { STATUS_LABELS, STATUS_COLORS, formatCurrency, formatDate } from '../utils/quote'
 import type { Quote } from '../types'
+
+function ConvertButton({ quote, onClick }: { quote: Quote; onClick: () => void }) {
+  const { data: contract, isLoading } = useContractByBudget(quote.id)
+  const navigate = useNavigate()
+  if (isLoading) return null
+  if (contract) {
+    return (
+      <Button variant="ghost" size="sm" title="Ver contrato" onClick={() => navigate(`/crm/contracts/${contract.id}`)}>
+        <FileText size={14} className="text-green-500" />
+      </Button>
+    )
+  }
+  return (
+    <Button variant="ghost" size="sm" title="Converter em contrato" onClick={onClick}>
+      <FileText size={14} className="text-indigo-500" />
+    </Button>
+  )
+}
 
 const ALL_STATUSES: Quote['status'][] = ['draft', 'sent', 'approved', 'rejected']
 
@@ -20,6 +40,7 @@ export function QuoteList() {
   const { company } = useSettingsStore()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<Quote['status'] | 'all'>('all')
+  const [convertingQuote, setConvertingQuote] = useState<Quote | null>(null)
 
   useEffect(() => { fetchQuotes() }, [])
 
@@ -139,6 +160,9 @@ export function QuoteList() {
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(quote)}>
                         <Edit2 size={14} />
                       </Button>
+                      {quote.status === 'approved' && (
+                        <ConvertButton quote={quote} onClick={() => setConvertingQuote(quote)} />
+                      )}
                       <Button variant="ghost" size="sm" onClick={() => deleteQuote(quote.id)}>
                         <Trash2 size={14} className="text-red-400" />
                       </Button>
@@ -149,6 +173,13 @@ export function QuoteList() {
             </tbody>
           </table>
         </Card>
+      )}
+      {convertingQuote && (
+        <ConvertToContractModal
+          quote={convertingQuote}
+          onClose={() => setConvertingQuote(null)}
+          onSuccess={() => setConvertingQuote(null)}
+        />
       )}
     </div>
   )

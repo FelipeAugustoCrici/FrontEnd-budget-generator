@@ -26,7 +26,7 @@ export function Login() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <span className="text-2xl font-bold text-indigo-600">BudgetGen</span>
+          <img src="/src/assets/logo.png" alt="BudgetGen" className="h-20 mx-auto mb-2" />
           <p className="text-sm text-gray-500 mt-1">Entre na sua conta</p>
         </div>
 

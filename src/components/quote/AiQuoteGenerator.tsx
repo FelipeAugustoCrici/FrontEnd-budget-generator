@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Sparkles, Loader2, Check, X } from 'lucide-react'
 import { api } from '../../lib/api'
+import { useClients, useCreateClient } from '../../hooks/crm/useClients'
 import type { Quote } from '../../types'
 
 interface Props {
@@ -12,6 +13,8 @@ export function AiQuoteGenerator({ onApply }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<Partial<Quote> | null>(null)
+  const { data: clientsData } = useClients()
+  const createClient = useCreateClient()
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault()
@@ -31,6 +34,17 @@ export function AiQuoteGenerator({ onApply }: Props) {
 
   function handleApply() {
     if (!preview) return
+
+    // Se a IA retornou um clientName e ele não existe no CRM, cria automaticamente
+    if (preview.clientName) {
+      const exists = clientsData?.data?.some(
+        (c) => c.name.toLowerCase() === preview.clientName!.toLowerCase()
+      )
+      if (!exists) {
+        createClient.mutate({ name: preview.clientName, company: '', email: '', phone: '', notes: '' })
+      }
+    }
+
     onApply(preview)
     setPreview(null)
     setPrompt('')

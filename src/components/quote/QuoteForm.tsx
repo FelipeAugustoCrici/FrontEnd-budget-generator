@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, Save, Eye, ArrowLeft, Trash2, LayoutTemplate, Check } from 'lucide-react'
 import { useQuoteStore } from '../../stores/quoteStore'
 import { useTemplateStore } from '../../stores/templateStore'
+import { useClients } from '../../hooks/crm/useClients'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Card } from '../ui/Card'
@@ -24,6 +25,8 @@ export function QuoteForm({ initialQuote, title }: Props) {
   const navigate = useNavigate()
   const { setCurrentQuote, saveQuote } = useQuoteStore()
   const { templates } = useTemplateStore()
+  const { data: clientsData } = useClients()
+  const crmClients = clientsData?.data ?? []
   const [quote, setQuote] = useState<Quote>(initialQuote)
   const goingToPreview = useRef(false)
 
@@ -161,12 +164,38 @@ export function QuoteForm({ initialQuote, title }: Props) {
       <Card className="p-6 mb-5">
         <h2 className="text-sm font-semibold text-gray-700 mb-4">Dados do Cliente</h2>
         <div className="grid grid-cols-2 gap-4">
-          <Input
-            label="Nome do cliente / projeto"
-            value={quote.clientName}
-            onChange={(e) => setQuote((q) => ({ ...q, clientName: e.target.value }))}
-            placeholder="Ex: Tiken"
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Cliente</label>
+            {crmClients.length > 0 ? (
+              <select
+                className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white"
+                value={quote.clientName}
+                onChange={(e) => setQuote((q) => ({ ...q, clientName: e.target.value }))}
+              >
+                <option value="">Selecionar cliente...</option>
+                {crmClients.map((c) => (
+                  <option key={c.id} value={c.name}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
+                ))}
+                <option value={quote.clientName && !crmClients.find(c => c.name === quote.clientName) ? quote.clientName : '__custom__'}>
+                  Outro (digitar manualmente)
+                </option>
+              </select>
+            ) : (
+              <Input
+                value={quote.clientName}
+                onChange={(e) => setQuote((q) => ({ ...q, clientName: e.target.value }))}
+                placeholder="Ex: Tiken"
+              />
+            )}
+            {crmClients.length > 0 && (quote.clientName === '__custom__' || (quote.clientName && !crmClients.find(c => c.name === quote.clientName))) && (
+              <Input
+                className="mt-2"
+                value={quote.clientName === '__custom__' ? '' : quote.clientName}
+                onChange={(e) => setQuote((q) => ({ ...q, clientName: e.target.value }))}
+                placeholder="Nome do cliente"
+              />
+            )}
+          </div>
           <Input
             label="Data"
             type="date"

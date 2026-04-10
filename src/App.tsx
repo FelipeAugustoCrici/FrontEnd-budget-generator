@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Layout } from './components/layout/Layout'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { Login } from './pages/Login'
@@ -11,6 +12,13 @@ import { Templates } from './pages/Templates'
 import { TemplateEditor } from './pages/TemplateEditor'
 import { Preview } from './pages/Preview'
 import { Settings } from './pages/Settings'
+import { CrmDashboard } from './pages/crm/CrmDashboard'
+import { ClientsPage } from './pages/crm/ClientsPage'
+import { ClientDetailPage } from './pages/crm/ClientDetailPage'
+import { ContractsPage } from './pages/crm/ContractsPage'
+import { ContractDetailPage } from './pages/crm/ContractDetailPage'
+
+const queryClient = new QueryClient()
 
 function AppRoutes() {
   return (
@@ -30,6 +38,13 @@ function AppRoutes() {
           <Route path="/templates/:id" element={<TemplateEditor />} />
           <Route path="/preview" element={<Preview />} />
           <Route path="/settings" element={<Settings />} />
+
+          {/* CRM */}
+          <Route path="/crm" element={<CrmDashboard />} />
+          <Route path="/crm/clients" element={<ClientsPage />} />
+          <Route path="/crm/clients/:id" element={<ClientDetailPage />} />
+          <Route path="/crm/contracts" element={<ContractsPage />} />
+          <Route path="/crm/contracts/:id" element={<ContractDetailPage />} />
         </Route>
       </Route>
 
@@ -40,8 +55,10 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </QueryClientProvider>
   )
 }
